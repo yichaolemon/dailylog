@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react'
 import './App.css'
 import React from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useMutation, useQuery } from '../convex/_generated/react';
 import { Id } from '../convex/_generated/dataModel';
 import { SignInButton, UserButton } from "@clerk/clerk-react";
 import { Authenticated, Unauthenticated } from 'convex/react';
+import { FullPost } from '../convex/posts';
 
 function PostEditor({onDone}: {onDone: () => void}) {
   const [text, setText] = useState('');
@@ -42,6 +44,15 @@ function AddPost() {
   }
 }
 
+function Tag({tag}: {tag: string}) {
+  const navigate = useNavigate();
+
+  return <span
+    className='tag'
+    onClick={() => navigate('/tag/'+tag)
+  }>&#35;{tag} </span>;
+}
+
 function LogEntry({text, author, creationTime, tags}: {text: string, author: string, creationTime: number, tags: string[]}) {
   const date = new Date(creationTime);
   return (
@@ -51,13 +62,22 @@ function LogEntry({text, author, creationTime, tags}: {text: string, author: str
       <div className="post_date">{date.toLocaleTimeString() + " " + date.toLocaleDateString()}</div>
     </div>
     <div className="post_text">{text}</div>
-    <div className="post_tags">{tags.map((tag, i) => <span className='tag' key={i}>&#35;{tag} </span>)}</div>
+    <div className="post_tags">{tags.map((tag, i) => <Tag key={i} tag={tag} />)}</div>
   </div>
   );
 }
 
-function DailyLog({user}: {user: Id<"users">}) {
+function DailyLogUserTimeline({user}: {user: Id<"users">}) {
   const logEntries = useQuery("posts:fetchPostsByAuthor", {authorid: user});
+  return <DailyLog logEntries={logEntries} />;
+}
+
+function DailyLogTag({tag}: {tag: string}) {
+  const logEntries = useQuery("posts:fetchPostsByTag", {tag});
+  return <DailyLog logEntries={logEntries} />;
+}
+
+function DailyLog({logEntries}: {logEntries: FullPost[] | undefined}) {
   if (!logEntries) {
     return null;
   }
@@ -74,37 +94,40 @@ function DailyLog({user}: {user: Id<"users">}) {
     </div>);
 }
 
-function AuthenticatedApp() {
+function AuthenticatedApp({tag}: {tag: string | undefined}) {
   const storeUser = useMutation('users:storeUser');
   const [userId, setUserId] = useState<Id<"users"> | null>(null);
+  const navigate = useNavigate();
   useEffect(() => {
     async function createUser() {
       setUserId(await storeUser());
     }
     createUser();
-  }, []);
+  }, [storeUser]);
   if (!userId) {
     return null;
   }
   return (
     <>
         <div className='page_header'>
-          <h1>Daily log</h1>
+          <h1><span  onClick={() => navigate('/')}>Daily log</span> {tag ? <Tag tag={tag} /> : null}</h1>
           <div className='page_header_right'>
             <AddPost />
             <UserButton afterSignOutUrl={window.location.href} />
           </div>
         </div>
-        <DailyLog user={userId} />
+        {tag ? <DailyLogTag tag={tag} /> : <DailyLogUserTimeline user={userId} />}
     </>
   )
 }
 
 function App() {
+  const { tag } = useParams();
+
   return (
     <>
       <Authenticated>
-        <AuthenticatedApp />
+        <AuthenticatedApp tag={tag} />
       </Authenticated>
       <Unauthenticated>
         <SignInButton mode="modal" />

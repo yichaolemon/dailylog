@@ -1,5 +1,5 @@
 import { Doc, Id } from "./_generated/dataModel";
-import { mutation, query } from "./_generated/server";
+import { DatabaseReader, QueryCtx, mutation, query } from "./_generated/server";
 import { mutationWithUser, queryWithUser } from "./withUser";
 
 export const createPost = mutationWithUser(async ({db, user}, {text, tags}: {text: string, tags: string[]}) => {
@@ -18,15 +18,9 @@ export const createPost = mutationWithUser(async ({db, user}, {text, tags}: {tex
   }
 });
 
-type FullPost = Omit<Doc<'posts'>, 'author'> & {author: Doc<'users'>, tags: Doc<'tags'>[]};
+export type FullPost = Omit<Doc<'posts'>, 'author'> & {author: Doc<'users'>, tags: Doc<'tags'>[]};
 
-export const fetchPostsByAuthor = queryWithUser(async ({db}, {authorid}: {authorid: Id<'users'>}) => {
-  const posts = await db.query("posts")
-    .withIndex("by_author", q => 
-    q.eq("author", authorid)
-    )
-    .order("desc")
-    .collect();
+const populateFullPosts = async (db: DatabaseReader, posts: Doc<'posts'>[]) => {
   const fullPosts: FullPost[] = [];
   for (const post of posts) {
     const author = (await db.get(post.author))!;
@@ -34,4 +28,22 @@ export const fetchPostsByAuthor = queryWithUser(async ({db}, {authorid}: {author
     fullPosts.push({...post, author, tags});
   }
   return fullPosts;
+};
+
+export const fetchPostsByAuthor = queryWithUser(async ({db}: QueryCtx, {authorid}: {authorid: Id<'users'>}) => {
+  const posts = await db.query("posts")
+    .withIndex("by_author", q => 
+    q.eq("author", authorid)
+    )
+    .order("desc")
+    .collect();
+  return await populateFullPosts(db, posts);
+});
+
+export const fetchPostsByTag = queryWithUser(async ({db}: QueryCtx, {tag}: {tag: string}) => {
+  const tags = await db.query("tags").withIndex("by_tag_and_date", q => q.eq('name', tag)).order('desc').collect();
+  const posts = await Promise.all(tags.map(async (tag) => {
+    return (await db.get(tag.postid))!;
+  }));
+  return await populateFullPosts(db, posts);
 });

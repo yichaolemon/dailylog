@@ -115,3 +115,7 @@ body {
 .add_post_button {
   margin: 0 5px;
 }
+
+.tag:hover {
+  background-color: yellow;
+}
