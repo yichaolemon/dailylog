@@ -1,0 +1,12 @@
+{
+  "project": "dailylog",
+  "team": "dbas-demo",
+  "prodUrl": "https://bold-termite-524.convex.cloud",
+  "functions": "convex/",
+  "authInfo": [
+    {
+      "domain": "https://polished-ocelot-4.clerk.accounts.dev/",
+      "applicationID": "convex"
+    }
+  ]
+}

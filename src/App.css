@@ -1,0 +1,117 @@
+#root {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+body {
+  background: #d7d3d3;
+}
+
+.card {
+  padding: 2em;
+}
+
+.timeline {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.post {
+  background: #f2f0f0;
+  margin-bottom: 20px;
+  padding: 20px;
+  border-radius: 3px;
+  box-shadow: 0px 0px 5px rgba(0,0,0,0.1);
+}
+
+.post_header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.post_author {
+  font-weight: bold;
+}
+
+.post_date {
+  font-size: 0.8em;
+  color: #777;
+}
+
+.post_text {
+  white-space: pre-wrap;
+  user-select: text;
+  position: relative;
+}
+
+.overlay {
+  position: fixed;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent black */
+  z-index: 9999;
+}
+
+.post_edit_area {
+  position: relative;
+  margin: 40px auto;
+  min-height: 300px;
+  min-width: 400px;
+  display: flex;
+  flex-direction: column;
+  background-color: white;
+}
+
+.post_text_edit {
+  font-size: medium;
+  outline: none;
+  width: 100%;
+  flex: 1;
+  box-sizing: border-box;
+  resize: none;
+  border: none;
+  padding: 10px;
+}
+
+.post_tags_edit {
+  resize: none;
+  outline: none;
+  border: none;
+  width: 100%;
+  padding: 10px;
+  box-sizing: border-box;
+}
+
+.post_footer_edit {
+  min-height: 30px;
+  margin-top: 2px;
+  display: flex;
+  justify-content: space-between;
+}
+
+.tag {
+  color: gray;
+}
+
+.page_header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.page_header_right {
+  display: flex;
+}
+
+.add_post_button {
+  margin: 0 5px;
+}
