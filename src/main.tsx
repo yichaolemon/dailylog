@@ -6,8 +6,6 @@ import { ConvexReactClient } from "convex/react";
 import { ClerkProvider } from "@clerk/clerk-react";
 import { ConvexProviderWithClerk } from "convex/react-clerk";
 import { BrowserRouter as Router, Routes, Route, createBrowserRouter, RouterProvider } from 'react-router-dom';
-import HomePage from './routes/home.js';
-import TagPage from './routes/tag.js';
 
 
 const convex = new ConvexReactClient(import.meta.env.VITE_CONVEX_URL);
@@ -15,11 +13,11 @@ const convex = new ConvexReactClient(import.meta.env.VITE_CONVEX_URL);
 const router = createBrowserRouter([
   {
     path: "/",
-    element: <HomePage />,
+    element: <App />,
   },
   {
     path: "/tag/:tag",
-    element: <TagPage />,
+    element: <App />,
   },
 ]);
 
