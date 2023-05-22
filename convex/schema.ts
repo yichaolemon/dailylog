@@ -6,7 +6,8 @@ export default defineSchema({
       text: v.string(),
       author: v.id("users"),
       last_updated_date: v.number(),
-    }).index("by_author", ["author"]),
+    }).index("by_author", ["author"])
+    .searchIndex('by_text', {filterFields: ['author'], searchField: 'text'}),
     tags: defineTable({
       name: v.string(),
       postid: v.id("posts"),

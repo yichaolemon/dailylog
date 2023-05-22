@@ -1,14 +1,14 @@
 import { useEffect, useState } from 'react'
 import './App.css'
 import React from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useMutation, usePaginatedQuery, useQuery } from '../convex/_generated/react';
 import { Doc, Id } from '../convex/_generated/dataModel';
 import { SignInButton, UserButton } from "@clerk/clerk-react";
 import { Authenticated, Unauthenticated } from 'convex/react';
 import { FullPost } from '../convex/posts';
 import { AddPost } from './PostEditor';
-import { DailyLogFollowing, DailyLogPost, DailyLogTag, DailyLogTimeline, DailyLogUserTimeline, Tag } from './Timeline';
+import { DailyLogFollowing, DailyLogPost, DailyLogSearch, DailyLogTag, DailyLogTimeline, DailyLogUserSearch, DailyLogUserTimeline, Tag } from './Timeline';
 
 function UserById({user}: {user: Id<"users">}) {
   const userDoc = useQuery("users:getUser", {user});
@@ -47,8 +47,16 @@ export function FollowButton() {
   return <button onClick={() => follow({user})}>Follow</button>;
 }
 
-function PageHeader() {
-  const { tag, user } = useParams();
+function Search() {
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  return <input type="text" placeholder="search" value={searchParams.get("s") ?? ""} onChange={(event) => {
+    setSearchParams({s: event.target.value});
+  }} />;
+}
+
+function PageHeader({following}: {following?: boolean}) {
+  const { tag, user, post } = useParams();
   const navigate = useNavigate();
 
   return <div className='page_header'>
@@ -58,6 +66,7 @@ function PageHeader() {
     </h1>
     <div className='page_header_right'>
       {user ? <FollowButton /> : null}
+      {following || tag || post ? null : <Search />}
       <AddPost />
       <UserButton afterSignOutUrl={window.location.href} />
     </div>
@@ -82,6 +91,8 @@ function NavigationSidebar({user}: {user: Id<"users">}) {
 
 function AuthenticatedApp({following}: {following?: boolean}) {
   const { tag, user: selectedUser, post } = useParams();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const searchQuery = searchParams.get("s");
 
   const storeUser = useMutation('users:storeUser');
   const [userId, setUserId] = useState<Id<"users"> | null>(null);
@@ -98,13 +109,15 @@ function AuthenticatedApp({following}: {following?: boolean}) {
 
   return (
     <>
-      <PageHeader />
+      <PageHeader following={following} />
       <div className='page_body'>
         <NavigationSidebar user={userId} />
         {tag ? <DailyLogTag tag={tag} /> :
         post ? <DailyLogPost post={new Id("posts", post)} /> :
         following ? <DailyLogFollowing /> :
+        (selectedUserId && searchQuery) ? <DailyLogUserSearch user={selectedUserId} search={searchQuery} /> :
         selectedUserId ? <DailyLogUserTimeline user={selectedUserId} /> :
+        searchQuery ? <DailyLogSearch search={searchQuery} /> :
         <DailyLogTimeline />}
       </div>
     </>

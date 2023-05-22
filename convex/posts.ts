@@ -49,6 +49,20 @@ export const fetchTimeline = queryWithUser(async ({db}: QueryCtx, {paginationOpt
   return await populateFullPosts(db, posts);
 });
 
+export const searchContent = queryWithUser(async ({db}, {search, paginationOpts}: {search: string, paginationOpts: PaginationOptions}) => {
+  const posts = await db.query("posts")
+    .withSearchIndex('by_text', q => q.search('text', search))
+    .paginate(paginationOpts);
+  return await populateFullPosts(db, posts);
+});
+
+export const searchUserContent = queryWithUser(async ({db}, {search, user, paginationOpts}: {search: string, user: Id<"users">, paginationOpts: PaginationOptions}) => {
+  const posts = await db.query("posts")
+    .withSearchIndex('by_text', q => q.search('text', search).eq('author', user))
+    .paginate(paginationOpts);
+  return await populateFullPosts(db, posts);
+});
+
 export const fetchFollowing = queryWithUser(async ({db, user}, {paginationOpts}: {paginationOpts: PaginationOptions}) => {
   const followed = (await db.query("follows").withIndex('by_follower', q => q.eq('follower', user._id)).collect()).map((follow) => follow.followed);
   const posts = await db.query("posts")

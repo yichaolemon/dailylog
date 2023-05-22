@@ -62,6 +62,16 @@ export function DailyLogFollowing() {
   return <DailyLog result={result} />;
 }
 
+export function DailyLogSearch({search}: {search: string}) {
+  const result = usePaginatedQuery("posts:searchContent", {search}, {initialNumItems: 3});
+  return <DailyLog result={result} />;
+}
+
+export function DailyLogUserSearch({user, search}: {user: Id<"users">, search: string}) {
+  const result = usePaginatedQuery("posts:searchUserContent", {user, search}, {initialNumItems: 3});
+  return <DailyLog result={result} />;
+}
+
 export function DailyLogTimeline() {
   const result = usePaginatedQuery("posts:fetchTimeline", {}, {initialNumItems: 3});
   return <DailyLog result={result} />;
