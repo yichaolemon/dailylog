@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import './App.css'
 import React from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { useMutation, useQuery } from '../convex/_generated/react';
+import { useMutation, usePaginatedQuery, useQuery } from '../convex/_generated/react';
 import { Id } from '../convex/_generated/dataModel';
 import { SignInButton, UserButton } from "@clerk/clerk-react";
 import { Authenticated, Unauthenticated } from 'convex/react';
@@ -68,12 +68,12 @@ function LogEntry({text, author, creationTime, tags}: {text: string, author: str
 }
 
 function DailyLogUserTimeline({user}: {user: Id<"users">}) {
-  const logEntries = useQuery("posts:fetchPostsByAuthor", {authorid: user});
+  const {results: logEntries, status, loadMore} = usePaginatedQuery("posts:fetchPostsByAuthor", {authorid: user}, {initialNumItems: 3});
   return <DailyLog logEntries={logEntries} />;
 }
 
 function DailyLogTag({tag}: {tag: string}) {
-  const logEntries = useQuery("posts:fetchPostsByTag", {tag});
+  const {results: logEntries, status, loadMore} = usePaginatedQuery("posts:fetchPostsByTag", {tag}, {initialNumItems: 3});
   return <DailyLog logEntries={logEntries} />;
 }
 
