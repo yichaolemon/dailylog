@@ -13,6 +13,7 @@ body {
 }
 
 .timeline {
+  flex-grow: 1;
   max-width: 600px;
   margin: 0 auto;
   padding: 20px;
@@ -118,4 +119,34 @@ body {
 
 .tag:hover {
   background-color: yellow;
+}
+
+.page_body {
+  display: flex;
+  flex-direction: row;
+}
+
+.navigation_bar {
+  width: 200px;
+  height: 100vh;
+  border-right: 1px solid gray;
+  display: flex;
+  flex-direction: column;
+}
+
+.navigation_bar_item {
+  border-radius: 10px;
+  padding: 0.5em;
+  margin-right: 1em;
+  margin-top: 1em;
+  color: rgb(71, 70, 70);
+  background-color: #eae6e6;
+}
+
+.username {
+  color: purple;
+}
+
+.username:hover {
+  background-color: lightgreen;
 }

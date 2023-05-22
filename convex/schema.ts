@@ -13,6 +13,10 @@ export default defineSchema({
       post_date: v.number(),
     }).index("by_tag_and_date", ["name", "post_date"])
     .index("by_postid", ["postid"]),
+    follows: defineTable({
+      follower: v.id("users"),
+      followed: v.id("users"),
+    }).index("by_follower", ['follower', "followed"]),
     users: defineTable({
       name: v.string(),
       tokenIdentifier: v.string(),

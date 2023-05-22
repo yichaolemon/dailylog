@@ -1,5 +1,6 @@
-import { Id } from "./_generated/dataModel";
-import { mutation } from "./_generated/server";
+import { Doc, Id } from "./_generated/dataModel";
+import { DatabaseReader, mutation, query } from "./_generated/server";
+import { mutationWithUser, queryWithUser } from "./withUser";
 
 export const storeUser = mutation(async ({ db, auth }) => {
   const identity = await auth.getUserIdentity();
@@ -29,3 +30,35 @@ export const storeUser = mutation(async ({ db, auth }) => {
   });
 });
 
+const getFollow = async (db: DatabaseReader, follower: Id<"users">, followed: Id<"users">): Promise<Doc<"follows"> | null> => {
+  return await db.query("follows")
+    .withIndex("by_follower", q => q.eq("follower", follower).eq("followed", followed))
+    .unique();
+}
+
+export const follow = mutationWithUser(async ({db, user}, {user: userId}: {user: Id<"users">}) => {
+  if (await getFollow(db, user._id, userId)) {
+    console.log("already followed");
+    return;
+  }
+  await db.insert("follows", {
+    follower: user._id,
+    followed: userId,
+  });
+}); 
+
+export const unfollow = mutationWithUser(async ({db, user}, {user: userId}: {user: Id<"users">}) => {
+  const follow = await getFollow(db, user._id, userId);
+  if (!follow) {
+    console.log("already not following");
+    return;
+  }
+  await db.delete(follow._id);
+}); 
+
+export const getUser = queryWithUser(async ({db, user}, {user: userId}: {user: Id<"users">}) => {
+  const userDoc = (await db.get(userId))!;
+  const followed = (await getFollow(db, user._id, userId)) !== null;
+  const isMe = user._id.equals(userId);
+  return {...userDoc, followed, isMe};
+});

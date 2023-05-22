@@ -21,13 +21,14 @@ export const createPost = mutationWithUser(async ({db, user}, {text, tags}: {tex
 
 export type FullPost = Omit<Doc<'posts'>, 'author'> & {author: Doc<'users'>, tags: Doc<'tags'>[]};
 
+const populateFullPost = async (db: DatabaseReader, post: Doc<"posts">): Promise<FullPost> => {
+  const author = (await db.get(post.author))!;
+  const tags = await db.query("tags").withIndex("by_postid", q => q.eq('postid', post._id)).collect();
+  return {...post, author, tags}; 
+}
+
 const populateFullPosts = async (db: DatabaseReader, posts: PaginationResult<Doc<"posts">>): Promise<PaginationResult<FullPost>> => {
-  const fullPosts: FullPost[] = [];
-  for (const post of posts.page) {
-    const author = (await db.get(post.author))!;
-    const tags = await db.query("tags").withIndex("by_postid", q => q.eq('postid', post._id)).collect();
-    fullPosts.push({...post, author, tags});
-  }
+  const fullPosts = await Promise.all(posts.page.map((post) => populateFullPost(db, post)));
   return {...posts, page: fullPosts};
 };
 
@@ -48,10 +49,28 @@ export const fetchTimeline = queryWithUser(async ({db}: QueryCtx, {paginationOpt
   return await populateFullPosts(db, posts);
 });
 
+export const fetchFollowing = queryWithUser(async ({db, user}, {paginationOpts}: {paginationOpts: PaginationOptions}) => {
+  const followed = (await db.query("follows").withIndex('by_follower', q => q.eq('follower', user._id)).collect()).map((follow) => follow.followed);
+  const posts = await db.query("posts")
+    .filter(q => q.or(...followed.map((userId) => q.eq(q.field('author'), userId))))
+    .order("desc")
+    .paginate(paginationOpts);
+  return await populateFullPosts(db, posts);
+});
+
 export const fetchPostsByTag = queryWithUser(async ({db}: QueryCtx, {tag, paginationOpts}: {tag: string, paginationOpts: PaginationOptions}) => {
+  console.log("querying for tag", tag);
   const tags = await db.query("tags").withIndex("by_tag_and_date", q => q.eq('name', tag)).order('desc').paginate(paginationOpts);
   const posts = await Promise.all(tags.page.map(async (tag) => {
     return (await db.get(tag.postid))!;
   }));
   return await populateFullPosts(db, {...tags, page: posts});
+});
+
+export const fetchPost = queryWithUser(async ({db}: QueryCtx, {post}: {post: Id<"posts">}) => {
+  const postDoc = await db.get(post);
+  if (!postDoc) {
+    return null;
+  }
+  return await populateFullPost(db, postDoc);
 });
