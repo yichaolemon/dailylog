@@ -5,6 +5,7 @@ export default defineSchema({
     posts: defineTable({
       text: v.string(),
       author: v.id("users"),
+      images: v.optional(v.array(v.string())),
       last_updated_date: v.number(),
     }).index("by_author", ["author"])
     .searchIndex('by_text', {filterFields: ['author'], searchField: 'text'}),

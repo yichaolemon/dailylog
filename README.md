@@ -8,4 +8,7 @@ journal app
 - row level security
 - friend requests? discovering users
 - edits and deletes
+- highlight search matches
+- rich text editing
+- if post is too big, collapse by default
 

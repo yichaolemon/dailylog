@@ -33,6 +33,7 @@ const LogEntry = forwardRef(({post}: {post: FullPost}, ref: ForwardedRef<HTMLDiv
       <div className="post_date">{date.toLocaleTimeString() + " " + date.toLocaleDateString()}</div>
     </div>
     <div className="post_text">{post.text}</div>
+    {post.images.map(((imageURL, i) => <img className='post_image' key={i} src={imageURL} />))}
     <div className="post_tags">{post.tags.map((tag, i) => <Tag key={i} tag={tag.name} />)}</div>
   </div>
   );
