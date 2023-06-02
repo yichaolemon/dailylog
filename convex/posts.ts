@@ -6,22 +6,45 @@ import { v } from "convex/values";
 
 export const createPost = mutation({
   args: {
+    postId: v.optional(v.id("posts")),
     text: v.string(),
     tags: v.array(v.string()),
     images: v.array(v.string()),
+    lastUpdatedDate: v.optional(v.number()),
   },
-  handler: withUser(async ({db, user}, {text, tags, images}) => {
-    const last_updated_date = Date.now();
-    const postid = await db.insert("posts", {
-      author: user._id,
-      text: text,
-      last_updated_date: last_updated_date,
-      images,
-    });
+  handler: withUser(async ({db, user}, {postId, text, tags, images, lastUpdatedDate}) => {
+    const last_updated_date = lastUpdatedDate ?? Date.now();
+    if (postId) {
+      const existingPost = (await db.get(postId))!;
+      if (!existingPost.author.equals(user._id)) {
+        throw new Error("only edit your own posts");
+      }
+      await db.patch(postId, {
+        text,
+        last_updated_date,
+      });
+    } else {
+      postId = await db.insert("posts", {
+        author: user._id,
+        text,
+        last_updated_date,
+        images,
+      });
+    }
+    const existingTags = await db.query("tags").withIndex("by_postid", q => q.eq("postid", postId!)).collect();
+    for (const existingTag of existingTags) {
+      const newIndex = tags.indexOf(existingTag.name);
+      if (newIndex >= 0 && existingTag.post_date === last_updated_date) {
+        // Already exists -- don't need to update it.
+        tags.splice(newIndex, 1);
+      } else {
+        await db.delete(existingTag._id);
+      }
+    }
     for (const tag of tags) {
       await db.insert("tags", {
         name: tag,
-        postid: postid,
+        postid: postId,
         post_date: last_updated_date,
       })
     }

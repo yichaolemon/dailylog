@@ -1,10 +1,12 @@
 import { useRef, useState } from "react";
 import React from 'react';
 import { useMutation, usePaginatedQuery, useQuery } from '../convex/_generated/react';
+import { Doc, Id } from "../convex/_generated/dataModel";
+import { FullPost } from "../convex/posts";
 
-function PostEditor({onDone}: {onDone: () => void}) {
-  const [text, setText] = useState('');
-  const [tags, setTags] = useState('');
+export function PostEditor({onDone, post}: {onDone: () => void, post?: FullPost}) {
+  const [text, setText] = useState(post ? post.text : '');
+  const [tags, setTags] = useState(post ? post.tags.map((t) => `#${t.name}`).join(' ') : '');
   const [posting, setPosting] = useState(false);
   const createPost = useMutation('posts:createPost');
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
@@ -25,7 +27,13 @@ function PostEditor({onDone}: {onDone: () => void}) {
       const { storageId } = await result.json();
       images.push(storageId);
     }
-    await createPost({text, tags: tagsArray, images});
+    await createPost({
+      postId: post?._id,
+      text,
+      tags: tagsArray,
+      images,
+      lastUpdatedDate: post?.last_updated_date,
+    });
     
     setSelectedImage(null);
     setText('');
@@ -36,7 +44,7 @@ function PostEditor({onDone}: {onDone: () => void}) {
     setText('');
     onDone();
   };
-  return (<div className='overlay'>
+  return (<div className='overlay' onClick={(event) => event.stopPropagation()}>
     <div className='post_edit_area'>
       <textarea className='post_text_edit' placeholder='Text here...' onChange={(event) => setText(event.target.value)} value={text}></textarea>
       <textarea className='post_tags_edit' placeholder='#tags' onChange={(event) => setTags(event.target.value)} value={tags}></textarea>

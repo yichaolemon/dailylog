@@ -1,4 +1,4 @@
-import { ForwardedRef, forwardRef, useEffect, useRef, useState } from 'react'
+import { ForwardedRef, forwardRef, useContext, useEffect, useRef, useState } from 'react'
 import './App.css'
 import React from 'react';
 import { useNavigate, useNavigation, useParams } from 'react-router-dom';
@@ -7,8 +7,8 @@ import { Id } from '../convex/_generated/dataModel';
 import { SignInButton, UserButton } from "@clerk/clerk-react";
 import { Authenticated, Unauthenticated, UsePaginatedQueryResult } from 'convex/react';
 import { FullPost } from '../convex/posts';
-import { AddPost } from './PostEditor';
-import { User } from './App';
+import { AddPost, PostEditor } from './PostEditor';
+import { User, UserContext } from './App';
 
 export function Tag({tag}: {tag: string}) {
   const navigate = useNavigate();
@@ -25,9 +25,12 @@ export function Tag({tag}: {tag: string}) {
 const LogEntry = forwardRef(({post}: {post: FullPost}, ref: ForwardedRef<HTMLDivElement>) => {
   const date = new Date(post._creationTime);
   const navigate = useNavigate();
+  const [editing, setEditing] = useState(false);
+  const userId = useContext(UserContext)!;
 
   return (
   <div className="post" onClick={() => navigate('/post/'+post._id.toString())} ref={ref}>
+    {editing ? <PostEditor onDone={() => setEditing(false)} post={post} /> : null }
     <div className="post_header">
       <div className="post_author"><User user={post.author} /></div>
       <div className="post_date">{date.toLocaleTimeString() + " " + date.toLocaleDateString()}</div>
@@ -35,6 +38,15 @@ const LogEntry = forwardRef(({post}: {post: FullPost}, ref: ForwardedRef<HTMLDiv
     <div className="post_text">{post.text}</div>
     {post.images.map(((imageURL, i) => <img className='post_image' key={i} src={imageURL} />))}
     <div className="post_tags">{post.tags.map((tag, i) => <Tag key={i} tag={tag.name} />)}</div>
+    <div className="post_footer">
+      <div />
+      {
+        userId.equals(post.author._id) ? <button className="edit_button" onClick={(event) => {
+          event.stopPropagation();
+          setEditing(true);
+        }}>edit</button> : null
+      }
+    </div>
   </div>
   );
 });

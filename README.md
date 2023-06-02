@@ -4,8 +4,8 @@ journal app
 ## Features wish list
 
 - search tags (popular tags in sidebar?)
-- images in posts
-- row level security
+- multiple images per post
+- row level security on posts
 - friend requests? discovering users
 - edits and deletes
 - highlight search matches

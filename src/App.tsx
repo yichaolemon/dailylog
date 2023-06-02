@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useContext, createContext } from 'react'
 import './App.css'
 import React from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
@@ -9,6 +9,8 @@ import { Authenticated, Unauthenticated } from 'convex/react';
 import { FullPost } from '../convex/posts';
 import { AddPost } from './PostEditor';
 import { DailyLogFollowing, DailyLogPost, DailyLogSearch, DailyLogTag, DailyLogTimeline, DailyLogUserSearch, DailyLogUserTimeline, Tag } from './Timeline';
+
+export const UserContext = createContext<Id<"users"> | null>(null);
 
 function UserById({user}: {user: Id<"users">}) {
   const userDoc = useQuery("users:getUser", {user});
@@ -108,7 +110,7 @@ function AuthenticatedApp({following}: {following?: boolean}) {
   const selectedUserId = selectedUser ? new Id("users", selectedUser) : null;
 
   return (
-    <>
+    <UserContext.Provider value={userId}>
       <PageHeader following={following} />
       <div className='page_body'>
         <NavigationSidebar user={userId} />
@@ -120,7 +122,7 @@ function AuthenticatedApp({following}: {following?: boolean}) {
         searchQuery ? <DailyLogSearch search={searchQuery} /> :
         <DailyLogTimeline />}
       </div>
-    </>
+    </UserContext.Provider>
   )
 }
 

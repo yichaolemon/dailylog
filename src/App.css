@@ -34,6 +34,11 @@ body {
   margin-bottom: 10px;
 }
 
+.post_footer {
+  display: flex;
+  justify-content: space-between;
+}
+
 .post_author {
   font-weight: bold;
 }
