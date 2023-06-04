@@ -51,7 +51,7 @@ body {
 .post_text {
   white-space: pre-wrap;
   user-select: text;
-  position: relative;
+  /*position: relative;*/
 }
 
 .post_image {
@@ -68,7 +68,7 @@ body {
   left: 0;
   right: 0;
   background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent black */
-  z-index: 9999;
+  /*z-index: 9999;*/
 }
 
 .post_edit_area {
@@ -158,4 +158,8 @@ body {
 
 .username:hover {
   background-color: lightgreen;
+}
+
+.button {
+  cursor: pointer;
 }

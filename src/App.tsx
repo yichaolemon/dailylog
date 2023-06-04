@@ -79,13 +79,13 @@ function NavigationSidebar({user}: {user: Id<"users">}) {
   const navigate = useNavigate();
 
   return <div className='navigation_bar'>
-    <div className='navigation_bar_item' onClick={() => navigate('/')}>
+    <div className='navigation_bar_item button' onClick={() => navigate('/')}>
       Timeline
     </div>
-    <div className='navigation_bar_item' onClick={() => navigate('/following')}>
+    <div className='navigation_bar_item button' onClick={() => navigate('/following')}>
       Following
     </div>
-    <div className='navigation_bar_item' onClick={() => navigate('/user/' + user.toString())}>
+    <div className='navigation_bar_item button' onClick={() => navigate('/user/' + user.toString())}>
       My Log
     </div>
   </div>;

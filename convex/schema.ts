@@ -7,7 +7,8 @@ export default defineSchema({
       author: v.id("users"),
       images: v.optional(v.array(v.string())),
       last_updated_date: v.number(),
-    }).index("by_author", ["author"])
+    }).index("by_author", ["author", "last_updated_date"])
+    .index("by_date", ["last_updated_date"])
     .searchIndex('by_text', {filterFields: ['author'], searchField: 'text'}),
     tags: defineTable({
       name: v.string(),

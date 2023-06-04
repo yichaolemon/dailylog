@@ -3,6 +3,10 @@ import React from 'react';
 import { useMutation, usePaginatedQuery, useQuery } from '../convex/_generated/react';
 import { Doc, Id } from "../convex/_generated/dataModel";
 import { FullPost } from "../convex/posts";
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
+import dayjs, { Dayjs } from 'dayjs';
 
 export function PostEditor({onDone, post}: {onDone: () => void, post?: FullPost}) {
   const [text, setText] = useState(post ? post.text : '');
@@ -12,6 +16,7 @@ export function PostEditor({onDone, post}: {onDone: () => void, post?: FullPost}
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const fileRef = useRef<null | HTMLInputElement>(null);
   const newImageURL = useMutation('posts:newImageURL');
+  const [datetime, setDatetime] = React.useState<Dayjs | null>(dayjs(post?.last_updated_date));
 
   const handlePost = async () => {
     setPosting(true);
@@ -32,7 +37,7 @@ export function PostEditor({onDone, post}: {onDone: () => void, post?: FullPost}
       text,
       tags: tagsArray,
       images,
-      lastUpdatedDate: post?.last_updated_date,
+      lastUpdatedDate: datetime ? datetime.valueOf() : post?.last_updated_date,
     });
     
     setSelectedImage(null);
@@ -48,6 +53,12 @@ export function PostEditor({onDone, post}: {onDone: () => void, post?: FullPost}
     <div className='post_edit_area'>
       <textarea className='post_text_edit' placeholder='Text here...' onChange={(event) => setText(event.target.value)} value={text}></textarea>
       <textarea className='post_tags_edit' placeholder='#tags' onChange={(event) => setTags(event.target.value)} value={tags}></textarea>
+      <LocalizationProvider dateAdapter={AdapterDayjs}>
+      <DateTimePicker
+          value={datetime}
+          onChange={(newValue) => setDatetime(newValue)}
+        />
+      </LocalizationProvider>
       <div className='post_footer_edit'>
         <button onClick={handleCancel}>Cancel</button>
         <div>

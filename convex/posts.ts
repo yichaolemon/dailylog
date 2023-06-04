@@ -83,6 +83,7 @@ export const fetchPostsByAuthor = queryWithUser(async ({db, storage}: QueryCtx, 
 
 export const fetchTimeline = queryWithUser(async ({db, storage}: QueryCtx, {paginationOpts}: {paginationOpts: PaginationOptions}) => {
   const posts = await db.query("posts")
+    .withIndex("by_date")
     .order("desc")
     .paginate(paginationOpts);
   return await populateFullPosts(db, storage, posts);

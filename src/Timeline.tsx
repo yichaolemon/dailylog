@@ -7,14 +7,14 @@ import { Id } from '../convex/_generated/dataModel';
 import { SignInButton, UserButton } from "@clerk/clerk-react";
 import { Authenticated, Unauthenticated, UsePaginatedQueryResult } from 'convex/react';
 import { FullPost } from '../convex/posts';
-import { AddPost, PostEditor } from './PostEditor';
+import { PostEditor } from './PostEditor';
 import { User, UserContext } from './App';
 
 export function Tag({tag}: {tag: string}) {
   const navigate = useNavigate();
 
   return <span
-    className='tag'
+    className='tag button'
     onClick={(event) => {
       event.stopPropagation();
       navigate('/tag/'+tag);
@@ -23,7 +23,7 @@ export function Tag({tag}: {tag: string}) {
 }
 
 const LogEntry = forwardRef(({post}: {post: FullPost}, ref: ForwardedRef<HTMLDivElement>) => {
-  const date = new Date(post._creationTime);
+  const date = new Date(post.last_updated_date);
   const navigate = useNavigate();
   const [editing, setEditing] = useState(false);
   const userId = useContext(UserContext)!;
