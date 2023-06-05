@@ -9,6 +9,7 @@ import { Authenticated, Unauthenticated } from 'convex/react';
 import { FullPost } from '../convex/posts';
 import { AddPost } from './PostEditor';
 import { DailyLogFollowing, DailyLogPost, DailyLogSearch, DailyLogTag, DailyLogTimeline, DailyLogUserSearch, DailyLogUserTimeline, Tag } from './Timeline';
+import { FullUser } from '../convex/users';
 
 export const UserContext = createContext<Id<"users"> | null>(null);
 
@@ -21,7 +22,7 @@ function UserById({user}: {user: Id<"users">}) {
   return <User user={userDoc} />;
 }
 
-export function User({user}: {user: Doc<"users">}) {
+export function User({user}: {user: FullUser}) {
   const navigate = useNavigate();
   return <span className='username' onClick={(event) => {
     event.stopPropagation();
@@ -45,8 +46,32 @@ export function FollowButton() {
   }
   if (userDoc.followed) {
     return <button onClick={() => unfollow({user})}>Unfollow</button>;
+  } else if (userDoc.followRequested) {
+    return <button onClick={() => unfollow({user})}>Cancel follow request</button>;
+  } else {
+    return <button onClick={() => follow({user})}>Follow</button>;
   }
-  return <button onClick={() => follow({user})}>Follow</button>;
+}
+
+export function FollowsMeButton() {
+  const { user: userId } = useParams();
+  const user = new Id("users", userId!);
+  const userDoc = useQuery("users:getUser", {user});
+  const accept = useMutation("users:acceptFollow");
+  const reject = useMutation("users:rejectFollow");
+  if (!userDoc) {
+    return null;
+  }
+  if (userDoc.isMe) {
+    return null;
+  }
+  if (userDoc.followsMe) {
+    return <button onClick={() => reject({user})}>Unfollow</button>;
+  } else if (userDoc.followsMeRequested) {
+    return <button onClick={() => accept({user})}>Accept follow request</button>;
+  } else {
+    return null;
+  }
 }
 
 function Search() {
@@ -67,6 +92,7 @@ function PageHeader({following}: {following?: boolean}) {
     {user ? <UserById user={new Id("users", user)} /> : null}
     </h1>
     <div className='page_header_right'>
+      {user ? <FollowsMeButton /> : null}
       {user ? <FollowButton /> : null}
       {following || tag || post ? null : <Search />}
       <AddPost />
@@ -78,6 +104,8 @@ function PageHeader({following}: {following?: boolean}) {
 function NavigationSidebar({user}: {user: Id<"users">}) {
   const navigate = useNavigate();
 
+  const allUsers = useQuery("users:allUsers");
+
   return <div className='navigation_bar'>
     <div className='navigation_bar_item button' onClick={() => navigate('/')}>
       Timeline
@@ -87,6 +115,12 @@ function NavigationSidebar({user}: {user: Id<"users">}) {
     </div>
     <div className='navigation_bar_item button' onClick={() => navigate('/user/' + user.toString())}>
       My Log
+    </div>
+    <div>
+      users
+      {allUsers?.map((user) => {
+        return <div key={user._id.toString()}><User user={user} /></div>;
+      })}
     </div>
   </div>;
 }

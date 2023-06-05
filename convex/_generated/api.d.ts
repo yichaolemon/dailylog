@@ -11,6 +11,8 @@
 
 import type { ApiFromModules } from "convex/api";
 import type * as posts from "../posts";
+import type * as rls from "../rls";
+import type * as rowLevelSecurity from "../rowLevelSecurity";
 import type * as users from "../users";
 import type * as withUser from "../withUser";
 
@@ -25,6 +27,8 @@ import type * as withUser from "../withUser";
  */
 export type API = ApiFromModules<{
   posts: typeof posts;
+  rls: typeof rls;
+  rowLevelSecurity: typeof rowLevelSecurity;
   users: typeof users;
   withUser: typeof withUser;
 }>;
