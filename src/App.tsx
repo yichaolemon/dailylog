@@ -66,7 +66,7 @@ export function FollowsMeButton() {
     return null;
   }
   if (userDoc.followsMe) {
-    return <button onClick={() => reject({user})}>Unfollow</button>;
+    return <button onClick={() => reject({user})}>Reject follower</button>;
   } else if (userDoc.followsMeRequested) {
     return <button onClick={() => accept({user})}>Accept follow request</button>;
   } else {
