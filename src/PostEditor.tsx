@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import React from 'react';
 import { useMutation, usePaginatedQuery, useQuery } from '../convex/_generated/react';
 import { Doc, Id } from "../convex/_generated/dataModel";
@@ -9,19 +9,45 @@ import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import dayjs, { Dayjs } from 'dayjs';
 import MDEditor from '@uiw/react-md-editor';
 
-export function PostEditor({onDone, post}: {onDone: () => void, post?: FullPost}) {
+export function NewPostEditor({onDone}: {onDone: () => void}) {
+  const postDraft = useQuery("posts:fetchDraft");
+  if (postDraft === undefined) {
+    // Loading
+    return null;
+  }
+  if (postDraft === null) {
+    // No draft.
+    return <PostEditor onDone={onDone} draft={true} />;
+  }
+  return <PostEditor onDone={onDone} post={postDraft} draft={true} />;
+}
+
+export function PostEditor({onDone, post, draft}: {onDone: () => void, post?: FullPost, draft?: boolean}) {
   const [text, setText] = useState(post ? post.text : '');
   const [tags, setTags] = useState(post ? post.tags.map((t) => `#${t.name}`).join(' ') : '');
+  const tagsArray = tags.split(' ').map((tag) => tag.replaceAll('#', '').replaceAll(',', '')).filter((tag) => tag.length > 0);
   const [posting, setPosting] = useState(false);
   const createPost = useMutation('posts:createPost');
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const fileRef = useRef<null | HTMLInputElement>(null);
   const newImageURL = useMutation('posts:newImageURL');
   const [datetime, setDatetime] = React.useState<Dayjs | null>(dayjs(post?.last_updated_date));
+  const lastUpdatedDate = datetime ? datetime.valueOf() : post?.last_updated_date;
+
+  useEffect(() => {
+    if (draft) {
+      createPost({
+        text,
+        tags: tagsArray,
+        images: [],
+        lastUpdatedDate,
+        status: "draft",
+      });
+    }
+  }, [text]);
 
   const handlePost = async () => {
     setPosting(true);
-    const tagsArray = tags.split(' ').map((tag) => tag.replaceAll('#', '').replaceAll(',', '')).filter((tag) => tag.length > 0);
     const images = [];
     if (selectedImage) {
       const imageURL = await newImageURL();
@@ -38,7 +64,7 @@ export function PostEditor({onDone, post}: {onDone: () => void, post?: FullPost}
       text,
       tags: tagsArray,
       images,
-      lastUpdatedDate: datetime ? datetime.valueOf() : post?.last_updated_date,
+      lastUpdatedDate,
     });
     
     setSelectedImage(null);
@@ -90,6 +116,6 @@ export function AddPost() {
 
   return <>
     <button className='add_post_button' onClick={() => setEditing(true)}>Add Post</button>
-    {editing ? <PostEditor onDone={() => setEditing(false)} /> : null}
+    {editing ? <NewPostEditor onDone={() => setEditing(false)} /> : null}
   </>;
 }

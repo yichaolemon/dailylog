@@ -28,6 +28,12 @@ export const { withQueryRLS, withMutationRLS } = RowLevelSecurity<
 >({
   posts: {
     read: async ({ db, user }, post) => {
+      if (!user._id.equals(post.author)) {
+        // Hide drafts from others.
+        if (post.status === "draft") {
+          return false;
+        }
+      }
       return await isFollowed(db, user, post.author);
     },
     modify: async ({ user }, post) => {
