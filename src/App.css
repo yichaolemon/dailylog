@@ -51,6 +51,7 @@ body {
 .post_text {
   white-space: pre-wrap;
   user-select: text;
+  background-color: #f2f0f0 !important;
   /*position: relative;*/
 }
 
@@ -68,6 +69,7 @@ body {
   left: 0;
   right: 0;
   background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent black */
+  z-index: 10;
   /*z-index: 9999;*/
 }
 

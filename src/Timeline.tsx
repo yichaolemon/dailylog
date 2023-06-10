@@ -9,6 +9,7 @@ import { Authenticated, Unauthenticated, UsePaginatedQueryResult } from 'convex/
 import { FullPost } from '../convex/posts';
 import { PostEditor } from './PostEditor';
 import { User, UserContext } from './App';
+import MDEditor from '@uiw/react-md-editor';
 
 export function Tag({tag}: {tag: string}) {
   const navigate = useNavigate();
@@ -29,13 +30,23 @@ const LogEntry = forwardRef(({post}: {post: FullPost}, ref: ForwardedRef<HTMLDiv
   const userId = useContext(UserContext)!;
 
   return (
-  <div className="post" onClick={() => navigate('/post/'+post._id.toString())} ref={ref}>
+  <div
+    className="post"
+    ref={ref}
+    data-color-mode="light"
+  >
     {editing ? <PostEditor onDone={() => setEditing(false)} post={post} /> : null }
-    <div className="post_header">
+    <div
+      className="post_header"
+      onClick={() => navigate('/post/'+post._id.toString())}
+    >
       <div className="post_author"><User user={post.author} /></div>
       <div className="post_date">{date.toLocaleTimeString() + " " + date.toLocaleDateString()}</div>
     </div>
-    <div className="post_text">{post.text}</div>
+    <MDEditor.Markdown
+      className="post_text"
+      source={post.text}
+    />
     {post.images.map(((imageURL, i) => <img className='post_image' key={i} src={imageURL} />))}
     <div className="post_tags">{post.tags.map((tag, i) => <Tag key={i} tag={tag.name} />)}</div>
     <div className="post_footer">
@@ -65,8 +76,8 @@ export function DailyLogPost({post}: {post: Id<"posts">}) {
   const postDoc = useQuery("posts:fetchPost", {post});
 
   return <DailyLog result={postDoc ?
-    {results: [postDoc], status: 'Exhausted', loadMore: undefined} :
-    {results: [], status: 'LoadingMore', loadMore: undefined}
+    {results: [postDoc], isLoading: false, status: 'Exhausted', loadMore: () => {}} :
+    {results: [], isLoading: true, status: 'LoadingMore', loadMore: () => {}}
   } />;
 }
 

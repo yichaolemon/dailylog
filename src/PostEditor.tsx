@@ -7,6 +7,7 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import dayjs, { Dayjs } from 'dayjs';
+import MDEditor from '@uiw/react-md-editor';
 
 export function PostEditor({onDone, post}: {onDone: () => void, post?: FullPost}) {
   const [text, setText] = useState(post ? post.text : '');
@@ -51,7 +52,13 @@ export function PostEditor({onDone, post}: {onDone: () => void, post?: FullPost}
   };
   return (<div className='overlay' onClick={(event) => event.stopPropagation()}>
     <div className='post_edit_area'>
-      <textarea className='post_text_edit' placeholder='Text here...' onChange={(event) => setText(event.target.value)} value={text}></textarea>
+      <MDEditor
+        className='post_text_edit'
+        onChange={(value) => setText(value!)}
+        value={text}
+        data-color-mode="light"
+        autoFocus={true}
+      />
       <textarea className='post_tags_edit' placeholder='#tags' onChange={(event) => setTags(event.target.value)} value={tags}></textarea>
       <LocalizationProvider dateAdapter={AdapterDayjs}>
       <DateTimePicker
