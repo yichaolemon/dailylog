@@ -118,7 +118,7 @@ function DailyLog({result}: {result: UsePaginatedQueryResult<FullPost>}) {
       observer.observe(loader.current);
     }
     return () => observer.disconnect();
-  }, [loader, loaderIndex]);
+  }, [loader, loaderIndex, status]);
 
   return (<div className="timeline">
       {logEntries.map((post, i) =>
