@@ -28,6 +28,7 @@ import {
   WithoutSystemFields,
 } from "convex/server";
 import { GenericId } from "convex/values";
+import { Id } from "./_generated/dataModel";
 
 type Rule<Ctx, D> = (ctx: Ctx, doc: D) => Promise<boolean>;
 
@@ -98,7 +99,7 @@ export const RowLevelSecurity = <RuleCtx, DataModel extends GenericDataModel>(
   rules: Rules<RuleCtx, DataModel>
 ) => {
   const withMutationRLS = <
-    Ctx extends MutationCtx<DataModel, any>,
+    Ctx extends MutationCtx<DataModel>,
     Args extends ArgsArray,
     Output
   >(
@@ -127,7 +128,7 @@ export const RowLevelSecurity = <RuleCtx, DataModel extends GenericDataModel>(
   };
 };
 
-type ArgsArray = [] | [FunctionArgs];
+type ArgsArray = [] | [FunctionArgs<any>];
 type Handler<Ctx, Args extends ArgsArray, Output> = (
   ctx: Ctx,
   ...args: Args
@@ -297,6 +298,22 @@ class WrapReader<Ctx, DataModel extends GenericDataModel>
     this.rules = rules;
   }
 
+  normalizeId<TableName extends TableNamesInDataModel<DataModel>>(
+    tableName: TableName,
+    id: string
+  ): GenericId<TableName> | null {
+    return this.db.normalizeId(tableName, id);
+  }
+
+  tableName<TableName extends string>(id: GenericId<TableName>): TableName | null {
+    for (const tableName of Object.keys(this.rules)) {
+      if (this.db.normalizeId(tableName, id)) {
+        return tableName as TableName;
+      }
+    }
+    return null;
+  }
+
   async predicate<T extends GenericTableInfo>(
     tableName: string,
     doc: DocumentByInfo<T>
@@ -309,7 +326,11 @@ class WrapReader<Ctx, DataModel extends GenericDataModel>
 
   async get<TableName extends string>(id: GenericId<TableName>): Promise<any> {
     const doc = await this.db.get(id);
-    if (doc && (await this.predicate(id.tableName, doc))) {
+    if (doc) {
+      const tableName = this.tableName(id);
+      if (tableName && !(await this.predicate(tableName, doc))) {
+        return null;
+      }
       return doc;
     }
     return null;
@@ -353,6 +374,9 @@ class WrapWriter<Ctx, DataModel extends GenericDataModel>
     this.reader = new WrapReader(ctx, db, rules);
     this.rules = rules;
   }
+  normalizeId<TableName extends TableNamesInDataModel<DataModel>>(tableName: TableName, id: string): GenericId<TableName> | null {
+    return this.db.normalizeId(tableName, id);
+  }
   async insert<TableName extends string>(
     table: TableName,
     value: any
@@ -365,6 +389,14 @@ class WrapWriter<Ctx, DataModel extends GenericDataModel>
     }
     return await this.db.insert(table, value);
   }
+  tableName<TableName extends string>(id: GenericId<TableName>): TableName | null {
+    for (const tableName of Object.keys(this.rules)) {
+      if (this.db.normalizeId(tableName, id)) {
+        return tableName as TableName;
+      }
+    }
+    return null;
+  }
   async checkAuth<TableName extends string>(id: GenericId<TableName>) {
     // Note all writes already do a `db.get` internally, so this isn't
     // an extra read; it's just populating the cache earlier.
@@ -374,7 +406,11 @@ class WrapWriter<Ctx, DataModel extends GenericDataModel>
     if (doc === null) {
       throw new Error("no read access or doc does not exist");
     }
-    if (!(await this.modifyPredicate(id.tableName, doc))) {
+    const tableName = this.tableName(id);
+    if (tableName === null) {
+      return;
+    }
+    if (!(await this.modifyPredicate(tableName, doc))) {
       throw new Error("write access not allowed");
     }
   }

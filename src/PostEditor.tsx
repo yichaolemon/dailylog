@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import React from 'react';
-import { useMutation, usePaginatedQuery, useQuery } from '../convex/_generated/react';
+import { useMutation, usePaginatedQuery, useQuery } from 'convex/react';
 import { Doc, Id } from "../convex/_generated/dataModel";
 import { FullPost } from "../convex/posts";
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
@@ -8,9 +8,10 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import dayjs, { Dayjs } from 'dayjs';
 import MDEditor from '@uiw/react-md-editor';
+import { api } from "../convex/_generated/api";
 
 export function NewPostEditor({onDone}: {onDone: () => void}) {
-  const postDraft = useQuery("posts:fetchDraft");
+  const postDraft = useQuery(api.posts.fetchDraft);
   if (postDraft === undefined) {
     // Loading
     return null;
@@ -27,10 +28,10 @@ export function PostEditor({onDone, post, draft}: {onDone: () => void, post?: Fu
   const [tags, setTags] = useState(post ? post.tags.map((t) => `#${t.name}`).join(' ') : '');
   const tagsArray = tags.split(' ').map((tag) => tag.replaceAll('#', '').replaceAll(',', '')).filter((tag) => tag.length > 0);
   const [posting, setPosting] = useState(false);
-  const createPost = useMutation('posts:createPost');
+  const createPost = useMutation(api.posts.createPost);
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const fileRef = useRef<null | HTMLInputElement>(null);
-  const newImageURL = useMutation('posts:newImageURL');
+  const newImageURL = useMutation(api.posts.newImageURL);
   const [datetime, setDatetime] = React.useState<Dayjs | null>(dayjs(post?.last_updated_date));
   const lastUpdatedDate = datetime ? datetime.valueOf() : post?.last_updated_date;
 

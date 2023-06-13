@@ -30,7 +30,7 @@ export const createPost = mutation({
           const draft = await getDraft(db, user);
           if (draft) {
             if (postId) {
-              if (!draft._id.equals(postId)) {
+              if (draft._id !== postId) {
                 throw new Error("you can only have one draft");
               }
             } else {
@@ -47,7 +47,7 @@ export const createPost = mutation({
         const last_updated_date = lastUpdatedDate ?? Date.now();
         if (postId) {
           const existingPost = (await db.get(postId))!;
-          if (!existingPost.author.equals(user._id)) {
+          if (existingPost.author !== user._id) {
             throw new Error("only edit your own posts");
           }
           await db.patch(postId, {

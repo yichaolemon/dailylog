@@ -2,7 +2,7 @@ import { ForwardedRef, forwardRef, useContext, useEffect, useRef, useState } fro
 import './App.css'
 import React from 'react';
 import { useNavigate, useNavigation, useParams } from 'react-router-dom';
-import { useMutation, usePaginatedQuery, useQuery } from '../convex/_generated/react';
+import { useMutation, usePaginatedQuery, useQuery } from 'convex/react';
 import { Id } from '../convex/_generated/dataModel';
 import { SignInButton, UserButton } from "@clerk/clerk-react";
 import { Authenticated, Unauthenticated, UsePaginatedQueryResult } from 'convex/react';
@@ -10,6 +10,7 @@ import { FullPost } from '../convex/posts';
 import { PostEditor } from './PostEditor';
 import { User, UserContext } from './App';
 import MDEditor from '@uiw/react-md-editor';
+import { api } from '../convex/_generated/api';
 
 export function Tag({tag}: {tag: string}) {
   const navigate = useNavigate();
@@ -52,7 +53,7 @@ const LogEntry = forwardRef(({post}: {post: FullPost}, ref: ForwardedRef<HTMLDiv
     <div className="post_footer">
       <div />
       {
-        userId.equals(post.author._id) ? <button className="edit_button" onClick={(event) => {
+        userId === post.author._id ? <button className="edit_button" onClick={(event) => {
           event.stopPropagation();
           setEditing(true);
         }}>edit</button> : null
@@ -63,17 +64,17 @@ const LogEntry = forwardRef(({post}: {post: FullPost}, ref: ForwardedRef<HTMLDiv
 });
 
 export function DailyLogUserTimeline({user}: {user: Id<"users">}) {
-  const result = usePaginatedQuery("posts:fetchPostsByAuthor", {authorid: user}, {initialNumItems: 3});
+  const result = usePaginatedQuery(api.posts.fetchPostsByAuthor, {authorid: user}, {initialNumItems: 3});
   return <DailyLog result={result} />;
 }
 
 export function DailyLogTag({tag}: {tag: string}) {
-  const result = usePaginatedQuery("posts:fetchPostsByTag", {tag}, {initialNumItems: 3});
+  const result = usePaginatedQuery(api.posts.fetchPostsByTag, {tag}, {initialNumItems: 3});
   return <DailyLog result={result} />;
 }
 
 export function DailyLogPost({post}: {post: Id<"posts">}) {
-  const postDoc = useQuery("posts:fetchPost", {post});
+  const postDoc = useQuery(api.posts.fetchPost, {post});
 
   return <DailyLog result={postDoc ?
     {results: [postDoc], isLoading: false, status: 'Exhausted', loadMore: () => {}} :
@@ -82,22 +83,22 @@ export function DailyLogPost({post}: {post: Id<"posts">}) {
 }
 
 export function DailyLogFollowing() {
-  const result = usePaginatedQuery("posts:fetchFollowing", {}, {initialNumItems: 3});
+  const result = usePaginatedQuery(api.posts.fetchFollowing, {}, {initialNumItems: 3});
   return <DailyLog result={result} />;
 }
 
 export function DailyLogSearch({search}: {search: string}) {
-  const result = usePaginatedQuery("posts:searchContent", {search}, {initialNumItems: 3});
+  const result = usePaginatedQuery(api.posts.searchContent, {search}, {initialNumItems: 3});
   return <DailyLog result={result} />;
 }
 
 export function DailyLogUserSearch({user, search}: {user: Id<"users">, search: string}) {
-  const result = usePaginatedQuery("posts:searchUserContent", {user, search}, {initialNumItems: 3});
+  const result = usePaginatedQuery(api.posts.searchUserContent, {user, search}, {initialNumItems: 3});
   return <DailyLog result={result} />;
 }
 
 export function DailyLogTimeline() {
-  const result = usePaginatedQuery("posts:fetchTimeline", {}, {initialNumItems: 3});
+  const result = usePaginatedQuery(api.posts.fetchTimeline, {}, {initialNumItems: 3});
   return <DailyLog result={result} />;
 }
 

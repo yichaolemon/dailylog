@@ -137,7 +137,7 @@ export const fillUser = async (
   const followsMeDoc = await getFollow(db, user._id, me._id);
   const followsMeRequested = followsMeDoc !== null;
   const followsMe = followsMeRequested && !!followsMeDoc.accepted;
-  const isMe = me._id.equals(user._id);
+  const isMe = me._id === user._id;
   return {
     ...user,
     followed,

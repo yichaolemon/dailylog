@@ -7,7 +7,7 @@ const isFollowed = async (
   user: Doc<"users">,
   author: Id<"users">
 ) => {
-  if (user._id.equals(author)) {
+  if (user._id === author) {
     return true;
   }
   const followed = await db
@@ -15,7 +15,7 @@ const isFollowed = async (
     .withIndex("by_follower", (q) => q.eq("follower", user._id))
     .collect();
   for (const followDoc of followed) {
-    if (followDoc.accepted && followDoc.followed.equals(author)) {
+    if (followDoc.accepted && followDoc.followed === author) {
       return true;
     }
   }
@@ -28,7 +28,7 @@ export const { withQueryRLS, withMutationRLS } = RowLevelSecurity<
 >({
   posts: {
     read: async ({ db, user }, post) => {
-      if (!user._id.equals(post.author)) {
+      if (user._id !== post.author) {
         // Hide drafts from others.
         if (post.status === "draft") {
           return false;
@@ -37,23 +37,21 @@ export const { withQueryRLS, withMutationRLS } = RowLevelSecurity<
       return await isFollowed(db, user, post.author);
     },
     modify: async ({ user }, post) => {
-      return user._id.equals(post.author);
+      return user._id === post.author;
     },
     insert: async ({ user }, post) => {
-      return user._id.equals(post.author);
+      return user._id === post.author;
     },
   },
   follows: {
     read: async ({ user }, follow) => {
-      return (
-        user._id.equals(follow.followed) || user._id.equals(follow.follower)
-      );
+      return user._id === follow.followed || user._id === follow.follower;
     },
     insert: async ({ user }, follow) => {
-      return user._id.equals(follow.follower);
+      return user._id === follow.follower;
     },
     modify: async ({ user }, follow) => {
-      return user._id.equals(follow.follower) || user._id.equals(follow.followed);
+      return user._id === follow.follower || user._id === follow.followed;
     },
   },
   tags: {
@@ -69,14 +67,14 @@ export const { withQueryRLS, withMutationRLS } = RowLevelSecurity<
       if (!post) {
         return false;
       }
-      return post.author.equals(user._id);
+      return post.author === user._id;
     },
     insert: async ({ db, user }, tag) => {
       const post = await db.get(tag.postid);
       if (!post) {
         return false;
       }
-      return post.author.equals(user._id);
+      return post.author === user._id;
     },
   },
 });

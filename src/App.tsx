@@ -1,8 +1,9 @@
 import { useEffect, useState, useContext, createContext } from 'react'
 import './App.css'
 import React from 'react';
+import { api } from '../convex/_generated/api';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import { useMutation, usePaginatedQuery, useQuery } from '../convex/_generated/react';
+import { useMutation, usePaginatedQuery, useQuery } from 'convex/react';
 import { Doc, Id } from '../convex/_generated/dataModel';
 import { SignInButton, UserButton } from "@clerk/clerk-react";
 import { Authenticated, Unauthenticated } from 'convex/react';
@@ -14,7 +15,7 @@ import { FullUser } from '../convex/users';
 export const UserContext = createContext<Id<"users"> | null>(null);
 
 function UserById({user}: {user: Id<"users">}) {
-  const userDoc = useQuery("users:getUser", {user});
+  const userDoc = useQuery(api.users.getUser, {user});
   if (!userDoc) {
     return null;
   }
@@ -34,10 +35,10 @@ export function User({user}: {user: FullUser}) {
 
 export function FollowButton() {
   const { user: userId } = useParams();
-  const user = new Id("users", userId!);
-  const userDoc = useQuery("users:getUser", {user});
-  const follow = useMutation("users:follow");
-  const unfollow = useMutation("users:unfollow");
+  const user = userId! as Id<"users">;
+  const userDoc = useQuery(api.users.getUser, {user});
+  const follow = useMutation(api.users.follow);
+  const unfollow = useMutation(api.users.unfollow);
   if (!userDoc) {
     return null;
   }
@@ -55,10 +56,10 @@ export function FollowButton() {
 
 export function FollowsMeButton() {
   const { user: userId } = useParams();
-  const user = new Id("users", userId!);
-  const userDoc = useQuery("users:getUser", {user});
-  const accept = useMutation("users:acceptFollow");
-  const reject = useMutation("users:rejectFollow");
+  const user = userId! as Id<"users">;
+  const userDoc = useQuery(api.users.getUser, {user});
+  const accept = useMutation(api.users.acceptFollow);
+  const reject = useMutation(api.users.rejectFollow);
   if (!userDoc) {
     return null;
   }
@@ -89,7 +90,7 @@ function PageHeader({following}: {following?: boolean}) {
   return <div className='page_header'>
     <h1><span onClick={() => navigate('/')}>Daily log </span>
     {tag ? <Tag tag={tag} /> : null}
-    {user ? <UserById user={new Id("users", user)} /> : null}
+    {user ? <UserById user={user as Id<"users">} /> : null}
     </h1>
     <div className='page_header_right'>
       {user ? <FollowsMeButton /> : null}
@@ -104,7 +105,7 @@ function PageHeader({following}: {following?: boolean}) {
 function NavigationSidebar({user}: {user: Id<"users">}) {
   const navigate = useNavigate();
 
-  const allUsers = useQuery("users:allUsers");
+  const allUsers = useQuery(api.users.allUsers);
 
   return <div className='navigation_bar'>
     <div className='navigation_bar_item button' onClick={() => navigate('/')}>
@@ -130,7 +131,7 @@ function AuthenticatedApp({following}: {following?: boolean}) {
   const [searchParams, setSearchParams] = useSearchParams();
   const searchQuery = searchParams.get("s");
 
-  const storeUser = useMutation('users:storeUser');
+  const storeUser = useMutation(api.users.storeUser);
   const [userId, setUserId] = useState<Id<"users"> | null>(null);
   useEffect(() => {
     async function createUser() {
@@ -141,7 +142,7 @@ function AuthenticatedApp({following}: {following?: boolean}) {
   if (!userId) {
     return null;
   }
-  const selectedUserId = selectedUser ? new Id("users", selectedUser) : null;
+  const selectedUserId = selectedUser ? selectedUser as Id<"users"> : null;
 
   return (
     <UserContext.Provider value={userId}>
@@ -149,7 +150,7 @@ function AuthenticatedApp({following}: {following?: boolean}) {
       <div className='page_body'>
         <NavigationSidebar user={userId} />
         {tag ? <DailyLogTag tag={tag} /> :
-        post ? <DailyLogPost post={new Id("posts", post)} /> :
+        post ? <DailyLogPost post={post as Id<"posts">} /> :
         following ? <DailyLogFollowing /> :
         (selectedUserId && searchQuery) ? <DailyLogUserSearch user={selectedUserId} search={searchQuery} /> :
         selectedUserId ? <DailyLogUserTimeline user={selectedUserId} /> :
