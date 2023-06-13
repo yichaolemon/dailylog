@@ -49,7 +49,7 @@ body {
 }
 
 .post_text {
-  white-space: pre-wrap;
+  /* white-space: pre-wrap; */
   user-select: text;
   background-color: #f2f0f0 !important;
   /*position: relative;*/

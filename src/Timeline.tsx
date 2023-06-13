@@ -106,7 +106,7 @@ function DailyLog({result}: {result: UsePaginatedQueryResult<FullPost>}) {
   const {results: logEntries, status, loadMore} = result;
   const loader = useRef(null);
   // When the third to last post is on screen, load 5 more.
-  const loaderIndex = logEntries.length - 3;
+  const loaderIndex = Math.max(0, logEntries.length - 3);
   const handleObserver = (entries: any) => {
     const target = entries[0];
     if (target.isIntersecting && status === 'CanLoadMore') {
@@ -119,7 +119,7 @@ function DailyLog({result}: {result: UsePaginatedQueryResult<FullPost>}) {
       observer.observe(loader.current);
     }
     return () => observer.disconnect();
-  }, [loader, loaderIndex]);
+  }, [loader, loaderIndex, status]);
 
   return (<div className="timeline">
       {logEntries.map((post, i) =>

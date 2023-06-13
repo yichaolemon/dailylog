@@ -26,7 +26,8 @@ export function NewPostEditor({onDone}: {onDone: () => void}) {
 export function PostEditor({onDone, post, draft}: {onDone: () => void, post?: FullPost, draft?: boolean}) {
   const [text, setText] = useState(post ? post.text : '');
   const [tags, setTags] = useState(post ? post.tags.map((t) => `#${t.name}`).join(' ') : '');
-  const tagsArray = tags.split(' ').map((tag) => tag.replaceAll('#', '').replaceAll(',', '')).filter((tag) => tag.length > 0);
+  // #[^#]+\s* 
+  const tagsArray = tags.split('#').map((tag) => tag.trimEnd()).filter((tag) => tag.length > 0);
   const [posting, setPosting] = useState(false);
   const createPost = useMutation(api.posts.createPost);
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
