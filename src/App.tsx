@@ -117,6 +117,9 @@ function NavigationSidebar({user}: {user: Id<"users">}) {
     <div className='navigation_bar_item button' onClick={() => navigate('/user/' + user.toString())}>
       My Log
     </div>
+    <div className='navigation_bar_item button' onClick={() => navigate('/goals')}>
+      Goals
+    </div>
     <div>
       users
       {allUsers?.map((user) => {

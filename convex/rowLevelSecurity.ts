@@ -28,7 +28,6 @@ import {
   WithoutSystemFields,
 } from "convex/server";
 import { GenericId } from "convex/values";
-import { Id } from "./_generated/dataModel";
 
 type Rule<Ctx, D> = (ctx: Ctx, doc: D) => Promise<boolean>;
 
@@ -154,9 +153,7 @@ class WrapQuery<T extends GenericTableInfo> implements Query<T> {
     this.q = q as Query<T>;
     this.p = p;
   }
-  filter(
-    predicate: (q: FilterBuilder<T>) => Expression<boolean>
-  ): this {
+  filter(predicate: (q: FilterBuilder<T>) => Expression<boolean>): this {
     return new WrapQuery(this.q.filter(predicate), this.p) as this;
   }
   order(order: "asc" | "desc"): WrapQuery<T> {
@@ -305,7 +302,9 @@ class WrapReader<Ctx, DataModel extends GenericDataModel>
     return this.db.normalizeId(tableName, id);
   }
 
-  tableName<TableName extends string>(id: GenericId<TableName>): TableName | null {
+  tableName<TableName extends string>(
+    id: GenericId<TableName>
+  ): TableName | null {
     for (const tableName of Object.keys(this.rules)) {
       if (this.db.normalizeId(tableName, id)) {
         return tableName as TableName;
@@ -374,7 +373,10 @@ class WrapWriter<Ctx, DataModel extends GenericDataModel>
     this.reader = new WrapReader(ctx, db, rules);
     this.rules = rules;
   }
-  normalizeId<TableName extends TableNamesInDataModel<DataModel>>(tableName: TableName, id: string): GenericId<TableName> | null {
+  normalizeId<TableName extends TableNamesInDataModel<DataModel>>(
+    tableName: TableName,
+    id: string
+  ): GenericId<TableName> | null {
     return this.db.normalizeId(tableName, id);
   }
   async insert<TableName extends string>(
@@ -389,7 +391,9 @@ class WrapWriter<Ctx, DataModel extends GenericDataModel>
     }
     return await this.db.insert(table, value);
   }
-  tableName<TableName extends string>(id: GenericId<TableName>): TableName | null {
+  tableName<TableName extends string>(
+    id: GenericId<TableName>
+  ): TableName | null {
     for (const tableName of Object.keys(this.rules)) {
       if (this.db.normalizeId(tableName, id)) {
         return tableName as TableName;

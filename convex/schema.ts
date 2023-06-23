@@ -29,4 +29,9 @@ export default defineSchema({
     name: v.string(),
     tokenIdentifier: v.string(),
   }).index("by_token", ["tokenIdentifier"]),
+  goals: defineTable({
+    name: v.string(),
+    description: v.string(),
+    tag: v.string(),
+  }),
 });

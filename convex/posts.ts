@@ -53,6 +53,7 @@ export const createPost = mutation({
           await db.patch(postId, {
             text,
             last_updated_date,
+            images,
             status,
           });
         } else {
@@ -268,6 +269,12 @@ export const fetchPost = queryWithUser(
       return await populateFullPost(db, me, storage, postDoc);
     }
   )
+);
+
+export const deletePost = mutationWithUser(
+  withMutationRLS(async ({ db }, { post }: { post: Id<"posts"> }) => {
+    await db.delete(post);
+  })
 );
 
 const getDraft = async (db: DatabaseReader, me: Doc<"users">) => {

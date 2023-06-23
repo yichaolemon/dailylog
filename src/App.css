@@ -59,6 +59,10 @@ body {
   width: 100%;
 }
 
+.footer_button {
+  margin-left: 8px;
+}
+
 .overlay {
   position: fixed;
   display: flex;

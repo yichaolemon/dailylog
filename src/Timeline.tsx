@@ -29,6 +29,8 @@ const LogEntry = forwardRef(({post}: {post: FullPost}, ref: ForwardedRef<HTMLDiv
   const navigate = useNavigate();
   const [editing, setEditing] = useState(false);
   const userId = useContext(UserContext)!;
+  const deletePost = useMutation(api.posts.deletePost);
+  const [deleting, setDeleting] = useState(false);
 
   return (
   <div
@@ -52,12 +54,28 @@ const LogEntry = forwardRef(({post}: {post: FullPost}, ref: ForwardedRef<HTMLDiv
     <div className="post_tags">{post.tags.map((tag, i) => <Tag key={i} tag={tag.name} />)}</div>
     <div className="post_footer">
       <div />
+      <div>
       {
-        userId === post.author._id ? <button className="edit_button" onClick={(event) => {
-          event.stopPropagation();
+        userId === post.author._id ? <>
+        {deleting ?
+        <button className="footer_button" onClick={(event) => {
+          setDeleting(false);
+        }}>cancel</button>
+        :
+        <button className="footer_button" onClick={(event) => {
           setEditing(true);
-        }}>edit</button> : null
+        }}>edit</button>
+        }
+        <button className="footer_button" onClick={(event) => {
+          if (deleting) {
+            void deletePost({post: post._id});
+          } else {
+            setDeleting(true);
+          }
+        }}>{deleting ? "really delete" : "delete"}</button>
+        </> : null
       }
+      </div>
     </div>
   </div>
   );
